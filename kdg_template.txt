@@ -1,0 +1,37 @@
+# Kinesis Data Generator (KDG) Template
+# ==========================================
+# Service: Amazon Kinesis Data Streams
+# Stream Name: banking-transactions-stream
+# Records per second: 5-10 (for demo)
+# 
+# IMPORTANT KDG RULES:
+# - Must be flat JSON (no nested objects)
+# - Use integer coordinates only
+# - Paste the template below into KDG's "Template" field
+#
+# KDG URL: https://awslabs.github.io/amazon-kinesis-data-generator/web/producer.html
+
+# =====================================================
+# TEMPLATE (paste this into KDG):
+# =====================================================
+
+{"txn_timestamp": {{date.utc(\"YYYY-MM-DDTHH:mm:ss.SSSZ\")}}, "txn_id": {{random.number({\"min\":100000,\"max\":999999})}}, "customer_name": {{random.arrayElement([\"Ahmed K.\",\"Fatima R.\",\"Omar S.\",\"Layla M.\",\"Khalid B.\",\"Sara T.\",\"Yousef H.\",\"Noura A.\",\"Ali Z.\",\"Mona D.\",\"Hassan W.\",\"Reem Q.\",\"Nasser P.\",\"Dana L.\",\"Faisal J.\",\"Huda G.\"])}}, "txn_type": {{random.arrayElement([\"card_payment\",\"atm_withdrawal\",\"wire_transfer\",\"mobile_payment\",\"loan_repayment\",\"fx_exchange\",\"check_deposit\",\"bill_payment\"])}}, "amount": {{commerce.price(10,50000,2)}}, "currency": {{random.arrayElement([\"AED\",\"USD\",\"EUR\",\"GBP\",\"SAR\",\"JOD\"])}}, "channel": {{random.arrayElement([\"mobile_app\",\"atm\",\"branch\",\"online_banking\",\"pos_terminal\",\"phone_banking\"])}}, "location": {{random.arrayElement([\"Dubai\",\"Abu Dhabi\",\"Riyadh\",\"Amman\",\"Cairo\",\"Doha\",\"Manama\",\"Kuwait City\",\"Muscat\",\"Lagos\",\"London\",\"New York\"])}}, "account_id": {{random.number({\"min\":100000000,\"max\":999999999})}}, "account_age_months": {{random.number({\"min\":1,\"max\":360})}}, "avg_balance": {{random.number({\"min\":0,\"max\":95000})}}, "credit_score": {{random.number({\"min\":300,\"max\":850})}}}
+
+# =====================================================
+# SAMPLE OUTPUT (what one record looks like):
+# =====================================================
+
+{
+  "txn_timestamp": "2026-09-16T12:34:56.789Z",
+  "txn_id": "748291",
+  "customer_name": "Ahmed K.",
+  "txn_type": "wire_transfer",
+  "amount": "12500.00",
+  "currency": "AED",
+  "channel": "online_banking",
+  "location": "Dubai",
+  "account_id": "456789123",
+  "account_age_months": "48",
+  "avg_balance": "42000",
+  "credit_score": "720"
+}

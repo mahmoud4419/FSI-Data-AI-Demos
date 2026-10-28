@@ -1,0 +1,7 @@
+{
+  "kyc_id": "KYC-2026-001",
+  "bucket": "your-kyc-bucket",
+  "id_doc_key": "uploads/KYC-2026-001/emirates_id.jpg",
+  "selfie_key": "uploads/KYC-2026-001/selfie.jpg",
+  "address_doc_key": "uploads/KYC-2026-001/dewa_bill.pdf"
+}

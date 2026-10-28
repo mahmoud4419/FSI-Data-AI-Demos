@@ -1,0 +1,128 @@
+{
+  "Comment": "KYC document verification pipeline \u2014 Textract + Rekognition + Bedrock. Illustrative demo, not production.",
+  "StartAt": "ExtractIdentity",
+  "States": {
+    "ExtractIdentity": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ExtractIdFn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.identity",
+      "Next": "ParallelChecks",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "MaxAttempts": 2,
+          "IntervalSeconds": 3,
+          "BackoffRate": 2.0
+        }
+      ]
+    },
+    "ParallelChecks": {
+      "Type": "Parallel",
+      "Next": "ReasonAndDecide",
+      "ResultPath": "$.checks",
+      "Branches": [
+        {
+          "StartAt": "FaceMatch",
+          "States": {
+            "FaceMatch": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${FaceMatchFn}",
+                "Payload.$": "$"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "ExtractAddress",
+          "States": {
+            "ExtractAddress": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${ExtractAddressFn}",
+                "Payload.$": "$"
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "ReasonAndDecide": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ReasonFn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.decision",
+      "Next": "RouteDecision"
+    },
+    "RouteDecision": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.decision.Payload.outcome",
+          "StringEquals": "AUTO_APPROVE",
+          "Next": "Approved"
+        },
+        {
+          "Variable": "$.decision.Payload.outcome",
+          "StringEquals": "REJECT",
+          "Next": "Rejected"
+        }
+      ],
+      "Default": "ManualReview"
+    },
+    "Approved": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "${AuditTable}",
+        "Item": {
+          "kyc_id": {
+            "S.$": "$.kyc_id"
+          },
+          "status": {
+            "S": "APPROVED"
+          }
+        }
+      },
+      "End": true
+    },
+    "ManualReview": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${ReviewTopic}",
+        "Message.$": "$.decision.Payload.rationale"
+      },
+      "End": true
+    },
+    "Rejected": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "${AuditTable}",
+        "Item": {
+          "kyc_id": {
+            "S.$": "$.kyc_id"
+          },
+          "status": {
+            "S": "REJECTED"
+          }
+        }
+      },
+      "End": true
+    }
+  }
+}

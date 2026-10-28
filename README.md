@@ -48,3 +48,4 @@ it as a representative automation gain, measured against the bank's own current 
 
 ## Disclaimer
 Illustrative demo code. Not production-ready and not legal/compliance advice.
+https://github.com/mahmoud4419/FSI-Data-AI-Demos/blob/main/RetailBankingDataAI.png
